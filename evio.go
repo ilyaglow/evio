@@ -191,6 +191,18 @@ func Serve(events Events, addr ...string) error {
 	return serve(events, lns)
 }
 
+// ServeUDPConn serves events on a specified net.UDPConn.
+func ServeUDPConn(events Events, uconn *net.UDPConn) error {
+	var ln listener
+	ln.network = "udp"
+	ln.lnaddr = uconn.LocalAddr()
+	ln.addr = uconn.LocalAddr().String()
+	ln.opts.reusePort = false
+	ln.pconn = uconn
+
+	return stdserve(events, []*listener{&ln})
+}
+
 // InputStream is a helper type for managing input streams from inside
 // the Data event.
 type InputStream struct{ b []byte }

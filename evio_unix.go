@@ -16,8 +16,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ilyaglow/evio/internal"
 	reuseport "github.com/kavu/go_reuseport"
-	"github.com/tidwall/evio/internal"
 )
 
 type conn struct {
