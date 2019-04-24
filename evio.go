@@ -5,6 +5,7 @@
 package evio
 
 import (
+	"errors"
 	"io"
 	"net"
 	"os"
@@ -191,14 +192,22 @@ func Serve(events Events, addr ...string) error {
 	return serve(events, lns)
 }
 
-// ServeUDPConn serves events on a specified net.UDPConn.
-func ServeUDPConn(events Events, uconn *net.UDPConn) error {
+// ServePacketConn serves events on a specified net.PacketConn.
+func ServePacketConn(events Events, conn net.PacketConn) error {
 	var ln listener
-	ln.network = "udp"
-	ln.lnaddr = uconn.LocalAddr()
-	ln.addr = uconn.LocalAddr().String()
+	switch conn.(type) {
+	case *net.UDPConn:
+		ln.network = "udp"
+	case *net.UnixConn:
+		ln.network = "unix"
+	default:
+		return errors.New("unsupported connection type provided")
+	}
+
+	ln.lnaddr = conn.LocalAddr()
+	ln.addr = conn.LocalAddr().String()
 	ln.opts.reusePort = false
-	ln.pconn = uconn
+	ln.pconn = conn
 
 	return stdserve(events, []*listener{&ln})
 }
